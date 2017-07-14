@@ -62,7 +62,6 @@ class AboutProxyObjectProject(Koan):
         # NOTE: The Television class is defined below
         tv = Proxy(Television())
 
-        ### done
         self.assertTrue(isinstance(tv, Proxy))
 
     def test_tv_methods_still_perform_their_function(self):
@@ -71,7 +70,6 @@ class AboutProxyObjectProject(Koan):
         tv.channel = 10
         tv.power()
 
-        ### done
         self.assertEqual(10, tv.channel)
         self.assertTrue(tv.is_on())
 
@@ -81,13 +79,11 @@ class AboutProxyObjectProject(Koan):
         tv.power()
         tv.channel = 10
 
-        ## aint right
         self.assertEqual(['power', 'channel'], tv.messages())
 
     def test_proxy_handles_invalid_messages(self):
         tv = Proxy(Television())
 
-        ## done but no work
         ex = None
         with self.assertRaises(AttributeError):
             tv.no_such_method()
@@ -99,7 +95,6 @@ class AboutProxyObjectProject(Koan):
         tv.power()
         tv.power()
 
-        ## done
         self.assertTrue(tv.was_called('power'))
         self.assertFalse(tv.was_called('channel'))
 
