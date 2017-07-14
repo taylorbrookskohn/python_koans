@@ -1,14 +1,14 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Project: Create a Proxy Class
-#
+
 # In this assignment, create a proxy class (one is started for you
 # below).  You should be able to initialize the proxy object with any
 # object.  Any attributes called on the proxy object should be forwarded
 # to the target object.  As each attribute call is sent, the proxy should
 # record the name of the attribute sent.
-#
+
 # The proxy class is started for you.  You will need to add a method
 # missing handler and any other supporting methods.  The specification
 # of the Proxy class is given in the AboutProxyObjectProject koan.
@@ -17,15 +17,43 @@
 # can do it!
 
 from runner.koan import *
+import inspect
 
-class Proxy:
+class Proxy(object):
     def __init__(self, target_object):
-        # WRITE CODE HERE
-
+        object.__setattr__(self, '_messages', [])
+        object.__setattr__(self, '_was_called', {})
         #initialize '_obj' attribute last. Trust me on this!
-        self._obj = target_object
+        object.__setattr__(self, '_obj', target_object)
 
-    # WRITE CODE HERE
+    def messages(self):
+        return self._messages
+    def was_called(self, attribute):
+        return attribute in self._was_called
+    def number_of_times_called(self, attribute):
+        if attribute in self._was_called:
+            return self._was_called[attribute]
+        else:
+            return 0
+    def __setattr__(self, attr_name, value):
+        self._messages.append(attr_name)
+        if attr_name in self._was_called:
+            self._was_called[attr_name] += 1
+        else:
+            self._was_called[attr_name] = 1
+        setattr(object.__getattribute__(self, "_obj"), attr_name, value)
+
+    def __getattr__(self, attr_name):
+        if attr_name == 'messages':
+            return self.messages()
+        else:
+            self._messages.append(attr_name)
+            if attr_name in self._was_called:
+                self._was_called[attr_name] += 1
+            else:
+                self._was_called[attr_name] = 1
+            return getattr(object.__getattribute__(self, "_obj"), attr_name)
+
 
 # The proxy object should pass the following Koan:
 #
@@ -34,6 +62,7 @@ class AboutProxyObjectProject(Koan):
         # NOTE: The Television class is defined below
         tv = Proxy(Television())
 
+        ### done
         self.assertTrue(isinstance(tv, Proxy))
 
     def test_tv_methods_still_perform_their_function(self):
@@ -42,6 +71,7 @@ class AboutProxyObjectProject(Koan):
         tv.channel = 10
         tv.power()
 
+        ### done
         self.assertEqual(10, tv.channel)
         self.assertTrue(tv.is_on())
 
@@ -51,11 +81,13 @@ class AboutProxyObjectProject(Koan):
         tv.power()
         tv.channel = 10
 
+        ## aint right
         self.assertEqual(['power', 'channel'], tv.messages())
 
     def test_proxy_handles_invalid_messages(self):
         tv = Proxy(Television())
 
+        ## done but no work
         ex = None
         with self.assertRaises(AttributeError):
             tv.no_such_method()
@@ -67,6 +99,7 @@ class AboutProxyObjectProject(Koan):
         tv.power()
         tv.power()
 
+        ## done
         self.assertTrue(tv.was_called('power'))
         self.assertFalse(tv.was_called('channel'))
 
@@ -74,8 +107,13 @@ class AboutProxyObjectProject(Koan):
         tv = Proxy(Television())
 
         tv.power()
+        print("CHANNEL: ", tv.number_of_times_called('channel'))
         tv.channel = 48
+        print("CHANNEL: ", tv.number_of_times_called('channel'))
         tv.power()
+        print("CHANNEL: ", tv.number_of_times_called('channel'))
+
+        
 
         self.assertEqual(2, tv.number_of_times_called('power'))
         self.assertEqual(1, tv.number_of_times_called('channel'))
@@ -154,3 +192,4 @@ class TelevisionTest(Koan):
 
         tv.channel = 11
         self.assertEqual(11, tv.channel)
+
